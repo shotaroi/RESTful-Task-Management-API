@@ -6,6 +6,9 @@ import com.shotaroi.restfultaskmanagementapi.dto.UpdateTaskRequest;
 import com.shotaroi.restfultaskmanagementapi.entity.Task;
 import com.shotaroi.restfultaskmanagementapi.exception.NotFoundException;
 import com.shotaroi.restfultaskmanagementapi.repository.TaskRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -25,10 +28,10 @@ public class TaskService {
         return toResponse(saved);
     }
 
-    public List<TaskResponse> getAll() {
-        return taskRepository.findAll().stream()
-                .map(this::toResponse)
-                .toList();
+    public Page<TaskResponse> getAll(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return taskRepository.findAll(pageable)
+                .map(this::toResponse);
     }
 
     public TaskResponse getOne(Long id) {
