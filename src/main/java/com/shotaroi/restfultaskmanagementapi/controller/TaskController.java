@@ -30,12 +30,22 @@ public class TaskController {
     @GetMapping
     public Page<TaskResponse> getAll(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String direction
     ) {
         if (size > 50) size = 50;
         if (size < 1) size = 1;
         if (page < 0) page = 0;
-        return taskService.getAll(page, size);
+
+        if (!sortBy.equals("createAt") && !sortBy.equals("title") && !sortBy.equals("done")) {
+            sortBy = "createdAt";
+        }
+
+        if (!direction.equalsIgnoreCase("asc") && !direction.equalsIgnoreCase("desc")) {
+            direction = "desc";
+        }
+        return taskService.getAll(page, size, sortBy, direction);
     }
 
     @GetMapping("/{id}")
