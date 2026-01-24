@@ -5,6 +5,7 @@ import com.shotaroi.restfultaskmanagementapi.dto.TaskResponse;
 import com.shotaroi.restfultaskmanagementapi.dto.UpdateTaskRequest;
 import com.shotaroi.restfultaskmanagementapi.service.TaskService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,8 +28,14 @@ public class TaskController {
     }
 
     @GetMapping
-    public List<TaskResponse> getAll() {
-        return taskService.getAll();
+    public Page<TaskResponse> getAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        if (size > 50) size = 50;
+        if (size < 1) size = 1;
+        if (page < 0) page = 0;
+        return taskService.getAll(page, size);
     }
 
     @GetMapping("/{id}")
