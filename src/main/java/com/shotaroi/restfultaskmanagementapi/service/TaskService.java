@@ -9,6 +9,7 @@ import com.shotaroi.restfultaskmanagementapi.repository.TaskRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -28,8 +29,12 @@ public class TaskService {
         return toResponse(saved);
     }
 
-    public Page<TaskResponse> getAll(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
+    public Page<TaskResponse> getAll(int page, int size, String sortBy, String direction) {
+        Sort sort = direction.equalsIgnoreCase("desc")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
         return taskRepository.findAll(pageable)
                 .map(this::toResponse);
     }
