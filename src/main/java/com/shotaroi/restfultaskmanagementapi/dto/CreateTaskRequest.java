@@ -1,11 +1,12 @@
 package com.shotaroi.restfultaskmanagementapi.dto;
 
 import jakarta.validation.constraints.NotBlank;
-import org.springframework.data.annotation.CreatedBy;
+import jakarta.validation.constraints.Size;
 
 public class CreateTaskRequest {
 
     @NotBlank(message = "title must not be blank")
+    @Size(max = 255, message = "title must be at most 255 characters")
     private String title;
 
     public CreateTaskRequest() {}
