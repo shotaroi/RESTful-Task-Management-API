@@ -1,11 +1,14 @@
 package com.shotaroi.restfultaskmanagementapi.controller;
 
 import com.shotaroi.restfultaskmanagementapi.dto.CreateTaskRequest;
+import com.shotaroi.restfultaskmanagementapi.dto.PagedResponse;
 import com.shotaroi.restfultaskmanagementapi.dto.TaskResponse;
 import com.shotaroi.restfultaskmanagementapi.dto.UpdateTaskRequest;
 import com.shotaroi.restfultaskmanagementapi.service.TaskService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,25 +31,12 @@ public class TaskController {
     }
 
     @GetMapping
-    public Page<TaskResponse> getAll(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "createdAt") String sortBy,
-            @RequestParam(defaultValue = "desc") String direction
+    public PagedResponse<TaskResponse> getAll(
+            @PageableDefault(size = 10) Pageable pageable
     ) {
-        if (size > 50) size = 50;
-        if (size < 1) size = 1;
-        if (page < 0) page = 0;
-
-        if (!sortBy.equals("createAt") && !sortBy.equals("title") && !sortBy.equals("done")) {
-            sortBy = "createdAt";
-        }
-
-        if (!direction.equalsIgnoreCase("asc") && !direction.equalsIgnoreCase("desc")) {
-            direction = "desc";
-        }
-        return taskService.getAll(page, size, sortBy, direction);
+        return taskService.getAll(pageable);
     }
+
 
     @GetMapping("/{id}")
     public TaskResponse getOne(@PathVariable Long id) {
