@@ -1,6 +1,7 @@
 package com.shotaroi.restfultaskmanagementapi.service;
 
 import com.shotaroi.restfultaskmanagementapi.dto.CreateTaskRequest;
+import com.shotaroi.restfultaskmanagementapi.dto.PagedResponse;
 import com.shotaroi.restfultaskmanagementapi.dto.TaskResponse;
 import com.shotaroi.restfultaskmanagementapi.dto.UpdateTaskRequest;
 import com.shotaroi.restfultaskmanagementapi.entity.Task;
@@ -29,15 +30,24 @@ public class TaskService {
         return toResponse(saved);
     }
 
-    public Page<TaskResponse> getAll(int page, int size, String sortBy, String direction) {
-        Sort sort = direction.equalsIgnoreCase("desc")
-                ? Sort.by(sortBy).descending()
-                : Sort.by(sortBy).ascending();
+    public PagedResponse<TaskResponse> getAll(Pageable pageable) {
+        Page<Task> page = taskRepository.findAll(pageable);
 
-        Pageable pageable = PageRequest.of(page, size, sort);
-        return taskRepository.findAll(pageable)
-                .map(this::toResponse);
+        List<TaskResponse> items = page.getContent().stream()
+                .map(this::toResponse)
+                .toList();
+
+        return new PagedResponse<>(
+                items,
+                page.getNumber(),
+                page.getSize(),
+                page.getTotalElements(),
+                page.getTotalPages(),
+                page.hasNext(),
+                page.hasPrevious()
+        );
     }
+
 
     public TaskResponse getOne(Long id) {
         Task task = taskRepository.findById(id)
