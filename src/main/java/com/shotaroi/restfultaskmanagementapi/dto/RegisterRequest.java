@@ -3,10 +3,9 @@ package com.shotaroi.restfultaskmanagementapi.dto;
 import jakarta.validation.constraints.NotBlank;
 
 public class RegisterRequest {
-    @NotBlank
+    @NotBlank(message = "username must not be blank")
     private String username;
-
-    @NotBlank
+    @NotBlank(message = "password must not be blank")
     private String password;
 
     public String getUsername() { return username; }
