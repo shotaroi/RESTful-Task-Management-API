@@ -30,8 +30,22 @@ public class TaskService {
         return toResponse(saved);
     }
 
-    public PagedResponse<TaskResponse> getAll(Pageable pageable) {
-        Page<Task> page = taskRepository.findAll(pageable);
+    public PagedResponse<TaskResponse> getAll(Boolean done, String q, Pageable pageable) {
+
+        Page<Task> page;
+
+        boolean hasDoneFilter = (done != null);
+        boolean hasQuery = (q != null && !q.isBlank());
+
+        if (hasDoneFilter && hasQuery) {
+            page = taskRepository.findByDoneAndTitleContainingIgnoreCase(done, q, pageable);
+        } else if (hasDoneFilter) {
+            page = taskRepository.findByDone(done, pageable);
+        } else if (hasQuery) {
+            page = taskRepository.findByTitleContainingIgnoreCase(q, pageable);
+        } else {
+            page = taskRepository.findAll(pageable);
+        }
 
         List<TaskResponse> items = page.getContent().stream()
                 .map(this::toResponse)
@@ -47,6 +61,7 @@ public class TaskService {
                 page.hasPrevious()
         );
     }
+
 
 
     public TaskResponse getOne(Long id) {
