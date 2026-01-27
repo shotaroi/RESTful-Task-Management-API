@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -39,11 +40,32 @@ public class TaskController {
     @GetMapping
     public PagedResponse<TaskResponse> getAll(
             @RequestParam(required = false) Boolean done,
-            @RequestParam(required = false, name = "q") String q,
-            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
+            @RequestParam(required = false) String q,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String direction
     ) {
+        // Guardrails
+        if (page < 0) page = 0;
+        if (size < 1) size = 1;
+        if (size > 100) size = 100;
+
+        // Allow-list of safe sort fields (must match Task entity field names!)
+        if (!sortBy.equals("createdAt") && !sortBy.equals("title") && !sortBy.equals("done") && !sortBy.equals("id")) {
+            sortBy = "createdAt";
+        }
+
+        Sort sort = direction.equalsIgnoreCase("asc")
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+
         return taskService.getAll(done, q, pageable);
     }
+
+
 
     @Operation(summary = "Get a task")
     @GetMapping("/{id}")
