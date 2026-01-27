@@ -8,12 +8,12 @@ import java.time.Instant;
 @Table(name = "tasks")
 public class Task {
 
-//    @ManyToOne(optional = false)
-//    @JoinColumn(name = "owner_id")
-//    private AppUser owner;
-//
-//    public AppUser getOwner() { return owner; }
-//    public void setOwner(AppUser owner) { this.owner = owner; }
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "owner_id", nullable = false)
+    private AppUser owner;
+
+    public AppUser getOwner() { return owner; }
+    public void setOwner(AppUser owner) { this.owner = owner; }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
