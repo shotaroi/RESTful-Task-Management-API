@@ -1,6 +1,7 @@
 package com.shotaroi.restfultaskmanagementapi.security;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -25,25 +26,24 @@ public class JwtService {
         this.expirationMs = expirationMs;
     }
 
-    public String generateToken(String username) {
-        Date now = new Date();
-        Date expiry = new Date(now.getTime() + expirationMs);
-
-        return Jwts.builder()
-                .setSubject(username)
-                .setIssuedAt(now)
-                .setExpiration(expiry)
-                .signWith(key, SignatureAlgorithm.HS256)
-                .compact();
+    public String extractUsername(String token) {
+        return parseClaims(token).getSubject();
     }
 
-    public String validateAndGetUsername(String token) {
-        Claims claims = Jwts.parserBuilder()
+    public boolean isTokenValid(String token) {
+        try {
+            parseClaims(token);
+            return true;
+        } catch (JwtException | IllegalArgumentException e) {
+            return false;
+        }
+    }
+
+    private Claims parseClaims(String token) {
+        return Jwts.parserBuilder()
                 .setSigningKey(key)
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
-
-        return claims.getSubject();
     }
 }
