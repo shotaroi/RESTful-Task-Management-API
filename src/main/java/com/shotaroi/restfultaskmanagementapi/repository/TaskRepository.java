@@ -8,4 +8,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface TaskRepository extends JpaRepository<Task, Long> {
 //    Page<Task> findByOwner(AppUser owner, Pageable pageable);
+    Page<Task> findByDone(boolean done, Pageable pageable);
+
+    Page<Task> findByTitleContainingIgnoreCase(String title, Pageable pageable);
+
+    Page<Task> findByDoneAndTitleContainingIgnoreCase(boolean done, String title, Pageable pageable);
+
 }
