@@ -4,6 +4,7 @@ import com.shotaroi.restfultaskmanagementapi.dto.CreateTaskRequest;
 import com.shotaroi.restfultaskmanagementapi.dto.PagedResponse;
 import com.shotaroi.restfultaskmanagementapi.dto.TaskResponse;
 import com.shotaroi.restfultaskmanagementapi.dto.UpdateTaskRequest;
+import com.shotaroi.restfultaskmanagementapi.entity.AppUser;
 import com.shotaroi.restfultaskmanagementapi.entity.Task;
 import com.shotaroi.restfultaskmanagementapi.exception.NotFoundException;
 import com.shotaroi.restfultaskmanagementapi.repository.TaskRepository;
@@ -24,8 +25,9 @@ public class TaskService {
         this.taskRepository = taskRepository;
     }
 
-    public TaskResponse create(CreateTaskRequest req) {
+    public TaskResponse create(CreateTaskRequest req, AppUser owner) {
         Task task = new Task(req.getTitle());
+        task.setOwner(owner);
         Task saved = taskRepository.save(task);
         return toResponse(saved);
     }
