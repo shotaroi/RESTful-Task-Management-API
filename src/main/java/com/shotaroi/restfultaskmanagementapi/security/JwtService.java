@@ -46,4 +46,13 @@ public class JwtService {
                 .parseClaimsJws(token)
                 .getBody();
     }
+
+    public String generateToken(String username) {
+        return Jwts.builder()
+                .setSubject(username)
+                .setIssuedAt(new Date())
+                .setExpiration((new Date(System.currentTimeMillis() + expirationMs)))
+                .signWith(key)
+                .compact();
+    }
 }
