@@ -4,6 +4,8 @@ import com.shotaroi.restfultaskmanagementapi.dto.CreateTaskRequest;
 import com.shotaroi.restfultaskmanagementapi.dto.PagedResponse;
 import com.shotaroi.restfultaskmanagementapi.dto.TaskResponse;
 import com.shotaroi.restfultaskmanagementapi.dto.UpdateTaskRequest;
+import com.shotaroi.restfultaskmanagementapi.entity.AppUser;
+import com.shotaroi.restfultaskmanagementapi.repository.UserRepository;
 import com.shotaroi.restfultaskmanagementapi.service.TaskService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -14,6 +16,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,16 +28,23 @@ import java.util.List;
 public class TaskController {
 
     private final TaskService taskService;
+    private final UserRepository userRepository;
 
-    public TaskController(TaskService taskService) {
+    public TaskController(TaskService taskService, UserRepository userRepository) {
         this.taskService = taskService;
+        this.userRepository = userRepository;
     }
 
     @Operation(summary = "Create a new task")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public TaskResponse create(@Valid @RequestBody CreateTaskRequest req) {
-        return taskService.create(req);
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
+
+        AppUser owner = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Logged-in user not found:" + username));
+        return taskService.create(req, owner);
     }
 
     @Operation(summary = "Get all tasks")
