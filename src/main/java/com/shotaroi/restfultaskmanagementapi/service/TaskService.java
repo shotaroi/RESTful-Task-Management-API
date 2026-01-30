@@ -20,57 +20,52 @@ import java.util.List;
 public class TaskService {
 
     private final TaskRepository taskRepository;
+    private final com.shotaroi.restfultaskmanagementapi.repository.UserRepository userRepository;
 
-    public TaskService(TaskRepository taskRepository) {
+    public TaskService(TaskRepository taskRepository, com.shotaroi.restfultaskmanagementapi.repository.UserRepository userRepository) {
         this.taskRepository = taskRepository;
+        this.userRepository = userRepository;
     }
 
-    public TaskResponse create(CreateTaskRequest req, AppUser owner) {
+    public TaskResponse create(CreateTaskRequest req) {
+        String username = com.shotaroi.restfultaskmanagementapi.security.AuthUtil.currentUsername();
+        var owner = userRepository.findByUsername(username)
+                .orElseThrow(() -> new NotFoundException("User not found: " + username));
         Task task = new Task(req.getTitle());
         task.setOwner(owner);
+
         Task saved = taskRepository.save(task);
         return toResponse(saved);
     }
 
-    public PagedResponse<TaskResponse> getAll(Boolean done, String q, Pageable pageable) {
+    public Page<TaskResponse> getAll(int page, int size, String sortBy, String direction) {
+        String username = com.shotaroi.restfultaskmanagementapi.security.AuthUtil.currentUsername();
+        var owner = userRepository.findByUsername(username)
+                .orElseThrow(() -> new NotFoundException("User not found: " + username));
 
-        Page<Task> page;
+        Sort sort = direction.equalsIgnoreCase("desc")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
 
-        boolean hasDoneFilter = (done != null);
-        boolean hasQuery = (q != null && !q.isBlank());
+        Pageable pageable = PageRequest.of(page, size, sort);
 
-        if (hasDoneFilter && hasQuery) {
-            page = taskRepository.findByDoneAndTitleContainingIgnoreCase(done, q, pageable);
-        } else if (hasDoneFilter) {
-            page = taskRepository.findByDone(done, pageable);
-        } else if (hasQuery) {
-            page = taskRepository.findByTitleContainingIgnoreCase(q, pageable);
-        } else {
-            page = taskRepository.findAll(pageable);
-        }
-
-        List<TaskResponse> items = page.getContent().stream()
-                .map(this::toResponse)
-                .toList();
-
-        return new PagedResponse<>(
-                items,
-                page.getNumber(),
-                page.getSize(),
-                page.getTotalElements(),
-                page.getTotalPages(),
-                page.hasNext(),
-                page.hasPrevious()
-        );
+        return taskRepository.findByOwner(owner, pageable).map(this::toResponse);
     }
+
 
 
 
     public TaskResponse getOne(Long id) {
-        Task task = taskRepository.findById(id)
+        String username = com.shotaroi.restfultaskmanagementapi.security.AuthUtil.currentUsername();
+        var owner = userRepository.findByUsername(username)
+                .orElseThrow(() -> new NotFoundException("User not found: " + username));
+
+        Task task = taskRepository.findByIdAndOwner(id, owner)
                 .orElseThrow(() -> new NotFoundException("Task " + id + " not found"));
+
         return toResponse(task);
     }
+
 
     public TaskResponse update(Long id, UpdateTaskRequest req) {
         Task task = taskRepository.findById(id)
