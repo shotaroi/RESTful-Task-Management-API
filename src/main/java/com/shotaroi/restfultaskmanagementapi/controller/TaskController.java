@@ -44,14 +44,12 @@ public class TaskController {
 
         AppUser owner = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Logged-in user not found:" + username));
-        return taskService.create(req, owner);
+        return taskService.create(req);
     }
 
     @Operation(summary = "Get all tasks")
     @GetMapping
-    public PagedResponse<TaskResponse> getAll(
-            @RequestParam(required = false) Boolean done,
-            @RequestParam(required = false) String q,
+    public Page<TaskResponse> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
@@ -73,7 +71,7 @@ public class TaskController {
 
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        return taskService.getAll(done, q, pageable);
+        return taskService.getAll(page, size, sortBy, direction);
     }
 
 
