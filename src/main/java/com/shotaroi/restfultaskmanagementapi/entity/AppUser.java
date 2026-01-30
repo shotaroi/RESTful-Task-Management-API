@@ -12,7 +12,7 @@ public class AppUser {
     @Column(nullable = false, unique = true)
     private String username;
 
-    @Column(nullable = false)
+    @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
     public AppUser() {}
